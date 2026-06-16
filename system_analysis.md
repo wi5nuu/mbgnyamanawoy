@@ -3,27 +3,45 @@
 
 ---
 
-## 📌 1. Identifikasi Permasalahan Dataset Saat Ini (Current Data Pitfalls)
+## 📌 1. Analisis Detail 5 Berkas Dataset & Keterkaitan Dokumen Acuan
 
-Berdasarkan investigasi mendalam terhadap data mentah Kopikita Roastery, ditemukan beberapa kategori masalah kualitas data (*dirty data*) dan ketidaksesuaian struktur (*schema drift*):
+Sistem data automation ini membaca dan mengintegrasikan 5 berkas utama. Di bawah ini adalah rincian permasalahan kotor pada masing-masing berkas, dampaknya pada pipeline, dan bagaimana hal tersebut berkaitan erat dengan persyaratan di dalam **Case Study** (CS) dan **Rancangan Teknis** (RT):
 
-### A. Data Quality & Inkonsistensi Kuantitas (Sales History)
-*   **Representasi Teks Angka**: Kuantitas penjualan ditulis dalam kata string (misal: `"two"`, `"dua"`, `"uno"`).
-*   **Desimal Tidak Standar**: Penggunaan koma desimal gaya Eropa (contoh: `"2,0"`), yang jika di-parse langsung oleh pustaka standar Python akan dibaca sebagai string, bukan float.
-*   **Trailing Units**: Penulisan angka dicampur dengan satuan fisik (contoh: `"1 pcs"`, `"2.0 cups"`).
-*   **Kuantitas Invalid**: Adanya nilai kuantitas negatif (seperti `"-3"`) atau bernilai nol (`"0"`), yang tidak valid secara operasional kasir.
+### 1. `sales_history.csv` (Data Transaksi Kasir / POS)
+*   **Masalah Data Kotor**:
+    *   *Kuantitas Kotor*: Kuantitas ditulis dengan string kata angka (seperti `"two"`, `"dua"`), koma desimal Eropa (`"2,0"`), penambahan satuan unit (`"1 pcs"`, `"2.0 cups"`), nilai negatif, atau kosong (*null*).
+    *   *Format Tanggal Beragam*: Penulisan tanggal tidak konsisten (contoh: gabungan format `DD/MM/YYYY` dan format 12 jam dengan PM/AM).
+    *   *ID Tidak Valid*: Adanya transaksi dengan `Menu_ID` kosong atau tidak dikenal di katalog BOM (seperti `"TEST"`, `"MENU-999"`).
+*   **Keterkaitan dengan PDF Acuan**:
+    *   *CS Poin 1 (Data Mentah Berantakan)* & *RT Bab 2 (Pembersihan Data)*: Mensyaratkan pembersihan otomatis terhadap kesalahan ketik (*typo*), format tanggal tidak seragam, dan isolasi baris transaksi tidak sah ke status `Invalid Data` tanpa menghentikan eksekusi pipeline.
 
-### B. Masalah Format Penanggalan (Date Inconsistency)
-*   **Format Campuran**: Tanggal transaksi ditulis dalam berbagai format penulisan waktu (seperti `YYYY-MM-DD`, `DD/MM/YYYY`, `Month DD YYYY`, dan format waktu 12 jam dengan indikator PM/AM).
-*   **Missing/Invalid Dates**: Kolom tanggal kosong (*null*) atau berisi format tidak dikenal yang dapat memicu kegagalan parse (*NaN/NaT*).
+### 2. `warehouse_stock.json` (Data Stok Fisik Gudang)
+*   **Masalah Data Kotor**:
+    *   *Schema Drift Kritis*: Struktur kunci JSON berubah di tengah periode (kuartal 2), di mana key `stock_remaining` digantikan dengan `sisa_stok_akhir`.
+    *   *Casing & Whitespace*: ID barang (`Item_ID`) dan satuan (`UoM`) ditulis dengan spasi acak atau casing tidak seragam.
+*   **Keterkaitan dengan PDF Acuan**:
+    *   *CS Poin 1 (Schema Drift)* & *RT Bab 1 (Sistem Gudang)*: Menuntut skrip parsing yang memiliki ketahanan terhadap perubahan nama field di tengah periode guna menghindari hilangnya 50% data stok gudang.
 
-### C. Kerusakan Struktur Data & Schema Drift (Warehouse Stock)
-*   **Perubahan Nama Kunci JSON (Kritis)**: Pada periode kuartal kedua (Q2), kunci JSON untuk stok tersisa berubah dari `stock_remaining` menjadi `sisa_stok_akhir`. Tanpa mitigasi, hal ini menyebabkan hilangnya 50% data stok gudang.
-*   **Casing & Whitespace**: ID bahan baku (`Item_ID`) dan ID menu (`Menu_ID`) memiliki spasi acak dan casing huruf kecil/besar yang tidak konsisten.
+### 3. `Master_Inventory.csv` (Data Master Pembelian / Purchasing)
+*   **Masalah Data Kotor**:
+    *   *Perbedaan Satuan*: Satuan pembelian berupa `"Karton"` atau `"Kg"` yang berbeda dengan satuan pemakaian di gudang (`"pcs"` atau `"gram"`).
+    *   *Threshold di Satuan Supplier*: Ambang batas minimum stok (`Min_Stock_Threshold`) ditulis dalam satuan supplier besar.
+*   **Keterkaitan dengan PDF Acuan**:
+    *   *RT Bab 3 (Konversi Satuan)*: Mewajibkan konversi satuan besar supplier ke satuan metrik terkecil gudang (misalnya: kg $\rightarrow$ gram dengan faktor 1000, galon $\rightarrow$ ml dengan faktor 3785, karton $\rightarrow$ pcs dengan faktor 1000) agar nilai pembandingan stok berada dalam unit yang setara.
 
-### D. Relasi & Integritas Referensial
-*   **Menu Tidak Terdaftar**: Terdapat transaksi penjualan dengan `Menu_ID` yang tidak terdaftar di resep BOM (seperti menu `TEST`, `MENU-000`, `MENU-999`, atau `PROMO-01`).
-*   **UoM Mismatch**: Perbedaan satuan yang sangat parah di mana kasir mencatat dalam `cup/porsi`, gudang mencatat dalam `gram/ml/pcs`, dan pembelian mencatat dalam satuan besar supplier seperti `kg/liter/galon/karton`.
+### 4. `Recipe_BOM.json` (Data Resep / Bill of Materials)
+*   **Masalah Data Kotor**:
+    *   *Struktur JSON Dinamis*: Root list resep dapat dibungkus dalam key berbeda (`menu_items`, `menus`, dll.) atau langsung berupa array datar.
+    *   *Casing ID*: `Menu_ID` dan `Item_ID` bahan baku tidak konsisten casing-nya dengan file sales/inventory.
+*   **Keterkaitan dengan PDF Acuan**:
+    *   *CS Poin 2 (Konversi Resep)* & *RT Bab 3 (BOM Unpacking)*: Merupakan kunci algoritma untuk mengurai produk terjual (porsi) ke gram/ml bahan baku mentah sebelum direkonsiliasi dengan stok fisik gudang.
+
+### 5. `Employee.json` (Data Karyawan Terdaftar)
+*   **Masalah Data Kotor**:
+    *   *Resiko File Hilang/Kosong*: File opsional ini berpotensi tidak disediakan atau kosong pada lingkungan stress testing baru.
+    *   *Casing ID*: Penulisan `Employee_ID` tidak konsisten.
+*   **Keterkaitan dengan PDF Acuan**:
+    *   *RT Bab 1 (Error Handling)*: Membantu memvalidasi integritas identitas pencatat (`recorded_by`) di gudang atau kasir. Mitigasi harus memastikan hilangnya berkas ini tidak menghentikan jalannya pipeline secara keseluruhan (safe fallback).
 
 ---
 
@@ -104,4 +122,4 @@ Untuk menghadapi pengujian beban (*stress testing*) dengan volume data yang jauh
 | **Outlier & Variansi Nol** | Deviasi historis delta bernilai nol ($\sigma = 0$) memicu false positive anomali pada deviasi kecil. | Menerapkan batas bawah standar deviasi minimum (*Standard Deviation Floor Limit*) sebesar `10.0` unit pada aturan 3-Sigma. |
 | **Data Historis Minim** | Pembagian dengan nol (*Division-by-zero*) saat menghitung standar deviasi pada data sedikit. | *Count Safeguard*: Jika data historis $< 3$, standar deviasi diset secara otomatis ke nilai aman default (`500.0`). |
 | **Encoding & Delimiter Berbeda** | Kerusakan karakter Unicode (Excel/PowerShell) atau kegagalan split kolom. | Pipeline menyimpan laporan menggunakan encoding universal `utf-8-sig` (agar kompatibel langsung saat dibuka di MS Excel) dan menggunakan pendeteksi delimiter otomatis. |
-| **File Masukan Hilang / Kosong** | Kegagalan sistem tanpa melahirkan informasi penyebab. | Memeriksa eksistensi berkas menggunakan `os.path.exists` dan `os.path.getsize` di awal. Jika berkas kritis hilang/kosong, program dihentikan secara aman dengan log pesan kesalahan operasional yang informatif. |
+| **File Masukan Hilang / Kosong** | Kegagalan sistem tanpa melahirkan informasi penyebab. | Memeriksa eksistensi berkas menggunakan `os.path.exists` and `os.path.getsize`. Jika berkas kritis hilang/kosong, program dihentikan secara aman dengan log pesan kesalahan operasional yang informatif. |
