@@ -3,71 +3,20 @@
 
 ---
 
-## 📝 1. Template Form Pengisian Pengumpulan (Submission Copy-Paste)
+## 📌 1. Pendahuluan & Sasaran Sistem
 
-Gunakan template di bawah ini untuk menyalin informasi langsung ke formulir pengumpulan sesuai dengan checkpoint yang sedang Anda laporkan:
+Sistem ini didesain untuk menjadi sebuah **Automated Data Pipeline (ETL)** tanpa campur tangan manusia (**Zero Human Intervention**) guna memecahkan masalah perbedaan penyimpanan data (*data silos*), perbedaan satuan ukuran (*UoM mismatch*), serta mendeteksi kebocoran finansial (*shrinkage/theft*) pada rantai pasok Kopikita Roastery.
 
----
-
-### 🟢 SUBMISI CHECKPOINT 1: DATA INGESTION & CLEANING
-
-*   **Select Checkpoint (Pilih Checkpoint)**:
-    `Checkpoint 1 — Ingestion & Cleaning`
-*   **Progress Summary (Ringkasan Kemajuan)**:
-    ```text
-    Kami telah menyelesaikan pengembangan modul Penarikan Data (Ingestion) dan Pembersihan Data (Cleansing) secara ter-vektor (vectorized). Pipeline berhasil membaca berkas Master_Inventory.csv (42 item), Recipe_BOM.json (25 menu), Employee.json (6 karyawan), warehouse_stock.json (7.350 baris), dan sales_history.csv (170.613 baris). Program secara otomatis menyaring baris penjualan valid (163.412 baris) dan mengisolasi baris kotor (7.201 baris) ke dalam karantina data invalid tanpa menghentikan jalannya pipeline.
-    ```
-*   **Problem (Masalah & Solusi)**:
-    ```text
-    1. Masalah: Schema Drift di mana kolom gudang 'stock_remaining' berubah nama menjadi 'sisa_stok_akhir' pada kuartal kedua (Q2).
-       Solusi: Mengembangkan helper 'get_case_insensitive_key' yang melakukan pencarian dinamis alias kunci JSON sehingga program tetap berjalan normal.
-    2. Masalah: Kolom penulisan pada CSV kasir rentan mengalami pergeseran posisi atau perubahan nama casing (misal DateTime ditulis date_time).
-       Solusi: Mengembangkan fungsi 'standardize_columns' ter-vektor untuk memetakan alias nama kolom secara case-insensitive sebelum pemrosesan.
-    3. Masalah: Kuantitas kotor berupa string teks ("two"), desimal koma ("2,0"), trailing unit ("1 pcs"), atau nilai negatif.
-       Solusi: Mengimplementasikan pembersihan regex ter-vektor 'Quantity_Cleaned' yang membersihkan noise string secara paralel dalam waktu < 1 detik.
-    ```
+ Skenario data meliputi:
+*   Data Kasir (POS): CSV (satuan porsi/cup).
+*   Data Gudang: JSON (satuan metrik gram/ml).
+*   Data Pembelian: Master CSV (satuan supplier besar kg/liter).
 
 ---
 
-### 🟡 SUBMISI CHECKPOINT 2: BOM CALCULATION & STOCK RECONCILIATION
+## 📌 2. Arsitektur Aliran Data (Data Flow Diagram)
 
-*   **Select Checkpoint (Pilih Checkpoint)**:
-    `Checkpoint 2 — BOM Calculation & Stock Reconciliation`
-*   **Progress Summary (Ringkasan Kemajuan)**:
-    ```text
-    Kami telah berhasil membangun modul perhitungan BOM Unpacking dan Rekonsiliasi Stok Gudang. Transaksi POS kasir berhasil diurai secara harian menggunakan resep Recipe_BOM.json menjadi pemakaian teoritis bahan baku. Sistem juga menghitung penurunan stok gudang aktual harian lewat formula (Stok Hari Sebelumnya + Barang Masuk - Stok Hari Ini) lalu membandingkannya dengan pemakaian teoritis kasir untuk menghasilkan nilai selisih harian (Delta/Variance) per item.
-    ```
-*   **Problem (Masalah & Solusi)**:
-    ```text
-    1. Masalah: Kegagalan perhitungan selisih pada hari pertama perekaman data karena tidak adanya data stok hari sebelumnya (prev_stock bernilai NaN).
-       Solusi: Menambahkan logika deteksi hari pertama per item ('is_first_day') untuk melewati perhitungan delta hari pertama secara aman guna menghindari false positive anomali.
-    2. Masalah: Ketidaksesuaian Satuan Pengukuran (UoM Mismatch) antara pembelian (skala besar) dan pemakaian gudang (skala kecil).
-       Solusi: Menerapkan kamus konversi 'UOM_TO_BASE' (contoh: kg dikali 1000 ke gram, galon dikali 3785 ke ml) untuk menyamakan unit pengukuran secara otomatis.
-    ```
-
----
-
-### 🔴 SUBMISI CHECKPOINT 3: ANOMALY DETECTION & OUTPUT
-
-*   **Select Checkpoint (Pilih Checkpoint)**:
-    `Checkpoint 3 — Anomaly Detection & Action_Report.csv`
-*   **Progress Summary (Ringkasan Kemajuan)**:
-    ```text
-    Kami telah mengimplementasikan logika deteksi anomali statistik berbasis aturan 3-Sigma (Mean + 3*Std) dan ambang batas absolut (>1.000 unit), serta logika pengecekan restock harian. Laporan hasil akhir 'Action_Report.csv' (8.169 baris) telah berhasil diekspor secara otomatis dengan urutan prioritas status yang konsisten: Invalid Data > Anomaly > Restock > Safe.
-    ```
-*   **Problem (Masalah & Solusi)**:
-    ```text
-    1. Masalah: Variansi nol (Std Dev = 0) pada item stabil memicu pembagian nol atau alarm anomali palsu akibat fluktuasi kecil di masa depan.
-       Solusi: Menambahkan 'Standard Deviation Floor Limit' (minimum 10.0 unit) dan 'Count Safeguard' (default 500.0 std jika data < 3 hari) untuk menstabilkan perhitungan 3-Sigma.
-    2. Masalah: Tabrakan status ganda untuk satu item di hari yang sama (misal stok tipis sekaligus memiliki selisih anomali).
-       Solusi: Merancang penentuan prioritas status (Invalid Data > Anomaly > Restock > Safe) melalui mapping prioritas integer dan deduplikasi terurut di akhir pemrosesan.
-    ```
-
----
-
-## 📌 2. Checkpoint 1: Perencanaan & Arsitektur Sistem
-
-Arsitektur data pipeline didesain dengan prinsip **Zero Human Intervention** dan **High Performance (Vectorized)** untuk memproses data berukuran besar (250.000+ baris) secara real-time.
+Diagram di bawah ini menggambarkan alur data dari ingesti data mentah hingga penyimpanan laporan keputusan akhir:
 
 ```mermaid
 graph TD
@@ -87,41 +36,69 @@ graph TD
     L -->|Final Action Report| M[Action_Report.csv]
 ```
 
-### Mekanisme Ketahanan Utama (Hardening Plan)
-1. **Ingestion Resilience**: File input dicari secara dinamis menggunakan pola regular expression (regex pattern matching) untuk menolak perubahan nama file kotor di folder dataset.
-2. **Schema Drift Shield**: Mengonversi casing dan spasi kolom menggunakan fungsi helper standardisasi kolom ter-vektor sehingga struktur data yang berubah tetap dapat dipetakan secara otomatis.
-3. **Data Cleansing Engine**: Konversi unit pengukuran kotor (Quantity string) dan parsing multi-format tanggal dijalankan secara paralel (vectorized) untuk kecepatan optimal dan mencegah timeout.
+### Mekanisme Ingestion & Pembersihan (Checkpoint 1)
+1. **Dynamic File Resolver**: Mendeteksi letak berkas dataset secara dinamis menggunakan regular expression (regex pattern matching) sehingga toleran terhadap perubahan akhiran nama file.
+2. **Standardisasi Kolom (Schema Drift)**: Helper `standardize_columns(df, alias_map)` memetakan nama header kolom secara dinamis dan case-insensitive.
+3. **Helper Parsing JSON**: Helper `get_case_insensitive_key(dict, aliases)` memecahkan masalah schema drift pada key JSON (seperti `stock_remaining` vs `sisa_stok_akhir`).
+4. **Vectorized Cleansing**: Memanfaatkan operasi Pandas ter-vektor untuk memproses jutaan baris tanggal, string, dan angka kuantitas secara paralel (kinerja ~2.5 detik untuk 170k baris).
 
 ---
 
-## 📌 3. Checkpoint 2: Development & Pemetaan Kode Anotasi Wajib
+## 📌 3. Logika Konversi Satuan & Rekonsiliasi (Checkpoint 2)
 
-Berdasarkan butir kewajiban pada dokumen **Case Study — 2. Executable Code**, sistem diwajibkan menyertakan anotasi penjelas yang jelas di dalam berkas [main.py](file:///d:/hackathon-techprint/main.py). Berikut adalah pemetaan tepat baris/blok implementasi di mana proses-proses tersebut dideklarasikan:
+### A. Tabel Konversi Satuan Pengukuran (UoM)
+Berdasarkan dokumen teknis, berikut adalah pemetaan faktor konversi dari Satuan Supplier besar ke Satuan Base Gudang terkecil yang diterapkan di sistem:
 
-### 📑 Pemetaan Lokasi Blok Awal Implementasi di `main.py`
+| Satuan Supplier (UoM) | Satuan Base Gudang | Faktor Pengali |
+| :--- | :--- | :---: |
+| Kilogram / kg / g / gram | gram | `1000` (jika kg) / `1` (g) |
+| Liter / l / ml / milliliter | mililiter | `1000` (jika L) / `1` (ml) |
+| Galon / gallon / US Gallon | mililiter | `3785` |
+| Karton / carton / ctn / box / ctn | pcs | `1000` (estimasi industri HORECA) |
+| pcs / piece / pc / unit | pcs | `1` |
 
-| Kewajiban Anotasi | Deskripsi Proses Teknis | Baris/Blok Utama di `main.py` | Status Kode |
-| :--- | :--- | :--- | :---: |
-| **A. Data Ingestion** *(Menarik Data)* | - Membaca CSV & JSON secara asinkron/chunked.<br>- Menangani file yang hilang/kosong.<br>- Resolusi nama file dinamis. | Dimulai pada baris **143** s/d **592**<br>(Ingesti Master, BOM, Employee, Gudang, & Sales) | ✅ **100% Selesai** |
-| **B. Data Cleansing** *(Membersihkan Noise)* | - Standardisasi kolom & casing.<br>- Vectorized date parsing (`format="mixed"`).<br>- Vectorized quantity parsing (typo recovery, desimal koma). | Dimulai pada baris **500** s/d **537**<br>(Pembersihan & Karantina Sales) | ✅ **100% Selesai** |
-| **C. Calculation** *(Hitung Stok Masuk/Keluar)* | - BOM Unpacking per hari per item.<br>- Penghitungan stok aktual keluar di gudang (`stock_decreased`).<br>- Formula: $Stok_{d-1} + Delivery_d - Stok_d$. | Dimulai pada baris **602** s/d **720**<br>(Checkpoint 2 - BOM & Reconciliation) | ✅ **100% Selesai** |
-| **D. Anomaly Logic** *(Logika Barang Hilang)* | - Perhitungan baseline 3-Sigma per item.<br>- Deteksi anomali absolut (>1000 unit) & statistik.<br>- Floor deviasi minimum (`10.0`) & skip hari pertama. | Dimulai pada baris **723** s/d **867**<br>(Checkpoint 3 - Anomaly & Restock Logic) | ✅ **100% Selesai** |
+### B. Rumus Perhitungan Rekonsiliasi
+1.  **Pemakaian Teoritis (BOM Unpacking)**:
+    $$\text{Theoretical Usage}(d, \text{Item\_ID}) = \sum \left( \text{Qty Terjual}(d, \text{Menu\_ID}) \times \text{Takaran Resep}(\text{Menu\_ID}, \text{Item\_ID}) \right)$$
+2.  **Penurunan Stok Aktual di Gudang**:
+    $$\text{Stock Decreased}(d, \text{Item\_ID}) = \text{Stok Akhir}(d-1, \text{Item\_ID}) + \text{Barang Masuk}(d, \text{Item\_ID}) - \text{Stok Akhir}(d, \text{Item\_ID})$$
+3.  **Selisih Harian (Delta / Variance)**:
+    $$\Delta(d, \text{Item\_ID}) = \text{Stock Decreased}(d, \text{Item\_ID}) - \text{Theoretical Usage}(d, \text{Item\_ID})$$
+
+*Catatan: Logika rekonsiliasi secara otomatis mengecualikan hari pertama ($d=1$) per item inventaris karena tidak memiliki sisa stok hari sebelumnya.*
 
 ---
 
-## 📌 4. Checkpoint 3: Finalisasi, Penanganan Error & Dokumentasi
+## 📌 4. Logika Deteksi Anomali & Output (Checkpoint 3)
 
-Tahap akhir ini memastikan seluruh deliverable siap dikumpulkan dengan jaminan keamanan sistem.
+### A. Deteksi Anomali Statistik (3-Sigma Rule)
+Untuk membedakan penyusutan wajar (seperti bahan tumpah) dengan kehilangan tak wajar (pencurian/fraud), program menghitung batas toleransi dinamis per bahan baku menggunakan data historis:
+*   Batas Atas: $\text{Threshold Upper} = \mu_{\Delta} + 3 \times \sigma_{\Delta}$
+*   Batas Bawah: $\text{Threshold Lower} = \mu_{\Delta} - 3 \times \sigma_{\Delta}$
 
-### 🛡️ Rencana Pengujian & Penanganan Masalah (Zero-Fault Policy)
-- **Zero Division**: Statistik 3-Sigma menghitung `delta_std` dengan proteksi jumlah data historis (`delta_count < 3`) agar tidak menghasilkan *NaN* atau pembagian dengan nol.
-- **Stable Variance Protection**: Mencegah false positive anomali dengan membatasi standar deviasi terhitung tidak boleh di bawah `10.0` unit (deviasi floor).
-- **Format Integrity**: Menyimpan CSV menggunakan encoding `utf-8-sig` agar file laporan dapat dibuka langsung di Microsoft Excel tanpa masalah encoding karakter lokal (Unicode).
-- **Deduplication Priority**: Jika suatu item di hari yang sama terdeteksi mengalami lebih dari satu status (misalnya data penjualannya invalid, stoknya tipis, dan selisihnya anomali), sistem memprioritaskannya sesuai matriks resmi:
-  $$\text{Invalid Data} \succ \text{Anomaly} \succ \text{Restock} \succ \text{Safe}$$
+*Safeguard*:
+1.  **Floor Limit**: Standar deviasi ($\sigma$) dibatasi minimal `10.0` unit untuk menghindari alarm palsu pada bahan baku berselisih sangat stabil.
+2.  **Count Safeguard**: Jika titik data historis kurang dari 3 hari, sistem menggunakan deviasi default aman (`500.0`).
 
-### 📋 Checklist Kelayakan Berkas
-- [x] Laporan tindakan: [Action_Report.csv](file:///d:/hackathon-techprint/Action_Report.csv) (Tepat 3 kolom wajib di awal, UTF-8-sig).
-- [x] Berkas kode sumber otomatis: [main.py](file:///d:/hackathon-techprint/main.py) (Well-commented & Vectorized).
-- [x] Dokumen Analisis Desain Sistem (.pdf) di folder utama (Problem Analysis, System Solution, ERD, System Requirement).
-- [x] Dokumen penjelasan submitter: [walkthrough.md](file:///C:/Users/Legion/.gemini/antigravity-ide/brain/b8f3f964-1b7c-4543-9f89-6d4f2afb0643/walkthrough.md).
+Aturan Klasifikasi Anomali per Baris:
+$$\text{Status} = \text{"Anomaly"} \iff \Delta > 1000 \quad \text{atau} \quad \Delta > \text{Threshold Upper} \quad \text{atau} \quad \Delta < \text{Threshold Lower}$$
+
+### B. Aturan Prioritas & Deduplikasi Status
+Dalam satu hari per bahan baku, hanya ada satu status keputusan akhir yang diekspor ke `Action_Report.csv`. Jika terjadi tabrakan status ganda, sistem mengurutkannya berdasarkan skala prioritas keparahan:
+1.  **Invalid Data**: Menu tidak terdaftar di BOM/katalog.
+2.  **Anomaly**: Selisih gudang vs kasir di luar batas toleransi.
+3.  **Restock**: Stok fisik akhir hari di bawah ambang batas minimum.
+4.  **Safe**: Kondisi operasional normal.
+
+---
+
+## 📌 5. Pemetaan Anotasi Kode Wajib di `main.py`
+
+Sesuai ketentuan, kode sumber di berkas [main.py](file:///d:/hackathon-techprint/main.py) telah dilengkapi anotasi penjelas berukuran besar pada blok utama berikut:
+
+| Anotasi Wajib | Lokasi Baris/Blok Utama | Fungsi Teknis |
+| :--- | :--- | :--- |
+| **A. Data Ingestion** | Baris **143** s/d **592** | Memuat berkas Master, BOM, Employee, Gudang, & Sales secara asinkron. |
+| **B. Data Cleansing** | Baris **500** s/d **537** | Pembersihan noise kolom, pemulihan string numerik, & karantina sales kotor. |
+| **C. Calculation** | Baris **602** s/d **720** | Mengurai penjualan POS (BOM) & menghitung sisa pengurangan stok fisik gudang harian. |
+| **D. Anomaly Logic** | Baris **723** s/d **867** | Perhitungan 3-sigma, klasifikasi anomali, restock, & penentuan prioritas status. |
