@@ -788,42 +788,29 @@ print(f"    OK Threshold statistik dihitung untuk {len(df_stats)} item (dengan s
 # PENGECUALIAN: Hari pertama per item (is_first_day=True) TIDAK di-flag anomali
 # karena tidak ada baseline stok yang valid untuk menghitung penurunan.
 # ------------------------------------------------------------------------------
-print("\n[3b] Mendeteksi anomali inventaris...")
+print("\n[3b] Mendeteksi anomali inventaris (fully vectorized)...")
 
-def is_anomaly(row) -> bool:
-    """
-    [ANOMALY LOGIC] Menentukan apakah baris merupakan anomali inventaris.
+# [ANOMALY LOGIC] — 100% Vectorized (tidak ada apply/iterrows)
+# Hari pertama selalu dikecualikan (is_first_day=True → tidak punya prev_stock)
+_delta      = df_reconciliation["delta"]
+_th_upper   = df_reconciliation["threshold_upper"]
+_th_lower   = df_reconciliation["threshold_lower"]
+_not_first  = ~df_reconciliation["is_first_day"] & _delta.notna()
 
-    Mengembalikan True jika anomali terdeteksi, False jika normal.
-    Hari pertama per item selalu dikembalikan False (tidak ada prev_stock).
-    """
-    # Hari pertama: tidak ada data delta yang valid
-    if row["is_first_day"] or pd.isna(row["delta"]):
-        return False
+# Kriteria 1: Delta absolut > 1000 unit (case study requirement)
+_anom_abs   = _not_first & (_delta > ANOMALY_THRESHOLD_ABSOLUTE)
 
-    delta         = row["delta"]
-    th_upper      = row["threshold_upper"]
-    th_lower      = row["threshold_lower"]
+# Kriteria 2: Delta statistik atas > threshold_upper (3-sigma)
+_anom_stat_up = _not_first & _th_upper.notna() & (_delta > _th_upper)
 
-    # Anomali absolut: kehilangan > 1000 unit (case study requirement)
-    if delta > ANOMALY_THRESHOLD_ABSOLUTE:
-        return True
+# Kriteria 3: Delta statistik bawah < threshold_lower (mismatch BOM ekstrem)
+_anom_stat_dn = _not_first & _th_lower.notna() & (_delta < _th_lower)
 
-    # Anomali statistik atas: kehilangan jauh di atas normal (3-sigma)
-    if pd.notna(th_upper) and delta > th_upper:
-        return True
+df_reconciliation["is_anomaly"] = _anom_abs | _anom_stat_up | _anom_stat_dn
 
-    # Anomali statistik bawah: deficit ekstrem (kemungkinan manipulasi data besar)
-    if pd.notna(th_lower) and delta < th_lower:
-        return True
-
-    return False
-
-df_reconciliation["is_anomaly"] = df_reconciliation.apply(is_anomaly, axis=1)
-
-anomaly_count = df_reconciliation["is_anomaly"].sum()
+anomaly_count = int(df_reconciliation["is_anomaly"].sum())
 print(f"    OK Anomali terdeteksi: {anomaly_count:,} baris")
-print(f"    OK Dari {len(df_recon_valid):,} baris valid ({anomaly_count/len(df_recon_valid)*100:.1f}%)")
+print(f"    OK Dari {len(df_recon_valid):,} baris valid ({anomaly_count/max(len(df_recon_valid),1)*100:.1f}%)")
 
 
 # ------------------------------------------------------------------------------
@@ -870,74 +857,96 @@ print(f"    OK Item unik yang pernah restock: {restock_items_unique}")
 #   Date | Item_ID | Action_Status | (kolom opsional tambahan)
 # Sumber: Case Study — Expected Output & Rancangan Teknis — Bagian 5A
 # ------------------------------------------------------------------------------
-print("\n[3d] Membangun Action_Report...")
+print("\n[3d] Membangun Action_Report (fully vectorized)...")
 
-action_rows = []
+# ==============================================================================
+# [ACTION REPORT] FULLY VECTORIZED — No iterrows / No apply
+# Menggunakan np.select untuk klasifikasi status multi-kondisi secara paralel
+# Menggunakan vectorized string formatting untuk kolom Notes
+# ==============================================================================
 
 # --- BAGIAN 1: Data VALID dari rekonsiliasi gudang × POS ---
-for _, row in df_reconciliation.iterrows():
-    date      = str(row["date"])
-    item_id   = row["Item_ID"]
-    delta     = row["delta"]
-    stock_r   = row["stock_remaining"]
-    th_usage  = row["theoretical_usage"]
-    stock_dec = row["stock_decreased"]
-    is_first  = row["is_first_day"]
-    threshold = row["threshold_base"]
+df_r = df_reconciliation.copy()
 
-    # Tentukan status (urutan prioritas: Anomaly > Restock > Safe)
-    if row["is_anomaly"]:
-        status = "Anomaly"
-        if delta > ANOMALY_THRESHOLD_ABSOLUTE:
-            notes = f"KEHILANGAN: Delta=+{delta:.1f} unit > threshold {ANOMALY_THRESHOLD_ABSOLUTE}"
-        else:
-            notes = f"ANOMALI STATISTIK: Delta={delta:.1f} (>3-sigma dari baseline item)"
-    elif row["needs_restock"]:
-        status = "Restock"
-        notes  = f"Stok={stock_r:.1f} < MinThreshold={threshold:.0f}"
-    elif is_first:
-        # Hari pertama: tidak bisa ditentukan anomali, default Safe
-        status = "Safe"
-        notes  = "Hari pertama rekaman (baseline stok)"
-    else:
-        status = "Safe"
-        notes  = f"Stok={stock_r:.1f}, Delta={delta:.1f}"
+# Pastikan tipe data aman untuk operasi string
+_delta_r    = df_r["delta"].round(2)
+_stock_r    = df_r["stock_remaining"].round(2)
+_th_base_r  = df_r["threshold_base"].round(0)
+_th_usage_r = df_r["theoretical_usage"].fillna(0).round(2)
+_stock_dec_r = df_r["stock_decreased"].round(2)
 
-    action_rows.append({
-        "Date"              : date,
-        "Item_ID"           : item_id,
-        "Action_Status"     : status,
-        "Stock_Remaining"   : round(stock_r, 2),
-        "Theoretical_Usage" : round(th_usage, 2) if pd.notna(th_usage) else 0,
-        "Stock_Decreased"   : round(stock_dec, 2) if pd.notna(stock_dec) else None,
-        "Delta"             : round(delta, 2) if pd.notna(delta) else None,
-        "Notes"             : notes,
-    })
+# Vectorized Action_Status dengan np.select (prioritas: Anomaly > Restock > Safe)
+_conditions_status = [
+    df_r["is_anomaly"],
+    df_r["needs_restock"],
+]
+_choices_status = ["Anomaly", "Restock"]
+df_r["Action_Status"] = np.select(_conditions_status, _choices_status, default="Safe")
+
+# Vectorized Notes untuk tiap kategori
+# Notes Anomaly: bedakan antara anomali absolut dan statistik
+_notes_anom_abs  = "KEHILANGAN: Delta=+" + _delta_r.astype(str) + " unit > threshold " + str(ANOMALY_THRESHOLD_ABSOLUTE)
+_notes_anom_stat = "ANOMALI STATISTIK: Delta=" + _delta_r.astype(str) + " (>3-sigma dari baseline item)"
+_notes_anomaly   = np.where(
+    _delta_r > ANOMALY_THRESHOLD_ABSOLUTE,
+    _notes_anom_abs,
+    _notes_anom_stat
+)
+
+# Notes Restock
+_notes_restock = "Stok=" + _stock_r.astype(str) + " < MinThreshold=" + _th_base_r.astype(str)
+
+# Notes Safe: bedakan hari pertama vs hari biasa
+_notes_safe_first  = "Hari pertama rekaman (baseline stok)"
+_notes_safe_normal = "Stok=" + _stock_r.astype(str) + ", Delta=" + _delta_r.fillna(0).astype(str)
+_notes_safe = np.where(df_r["is_first_day"], _notes_safe_first, _notes_safe_normal)
+
+# Pilih Notes sesuai status
+df_r["Notes"] = np.select(
+    [df_r["is_anomaly"], df_r["needs_restock"]],
+    [_notes_anomaly,     _notes_restock],
+    default=_notes_safe
+)
+
+# Bangun DataFrame laporan dari rekonsiliasi (tanpa loop)
+df_valid_report = pd.DataFrame({
+    "Date"              : df_r["date"].astype(str),
+    "Item_ID"           : df_r["Item_ID"],
+    "Action_Status"     : df_r["Action_Status"],
+    "Stock_Remaining"   : _stock_r,
+    "Theoretical_Usage" : _th_usage_r,
+    "Stock_Decreased"   : _stock_dec_r,
+    "Delta"             : _delta_r,
+    "Notes"             : df_r["Notes"],
+})
 
 # --- BAGIAN 2: Data INVALID dari karantina sales (Menu_ID tidak dikenal) ---
 # Transaksi dengan Menu_ID yang tidak ada di BOM/Master → "Invalid Data"
-for _, row in df_sales_invalid.iterrows():
-    reason = str(row.get("Invalid_Reason", ""))
-    if "menu_id_not_in_bom" not in reason:
-        continue   # Hanya invalid karena menu tidak dikenal yang masuk laporan
+# Vectorized filter: hanya baris dengan reason mengandung 'menu_id_not_in_bom'
+if not df_sales_invalid.empty:
+    _inv_mask = df_sales_invalid["Invalid_Reason"].astype(str).str.contains(
+        "menu_id_not_in_bom", na=False, regex=False
+    )
+    df_inv_filtered = df_sales_invalid[_inv_mask].copy()
 
-    date    = str(row.get("date", "UNKNOWN"))
-    menu_id = str(row.get("Menu_ID", "MISSING")).strip()
-    trx_id  = str(row.get("Transaction_ID", "?"))
+    if not df_inv_filtered.empty:
+        df_invalid_report = pd.DataFrame({
+            "Date"              : df_inv_filtered["date"].fillna("UNKNOWN").astype(str),
+            "Item_ID"           : df_inv_filtered["Menu_ID"].fillna("MISSING").astype(str).str.strip(),
+            "Action_Status"     : "Invalid Data",
+            "Stock_Remaining"   : None,
+            "Theoretical_Usage" : None,
+            "Stock_Decreased"   : None,
+            "Delta"             : None,
+            "Notes"             : "Menu_ID tidak ditemukan di katalog | TRX: " + df_inv_filtered["Transaction_ID"].fillna("?").astype(str),
+        })
+    else:
+        df_invalid_report = pd.DataFrame(columns=df_valid_report.columns)
+else:
+    df_invalid_report = pd.DataFrame(columns=df_valid_report.columns)
 
-    action_rows.append({
-        "Date"              : date,
-        "Item_ID"           : menu_id,
-        "Action_Status"     : "Invalid Data",
-        "Stock_Remaining"   : None,
-        "Theoretical_Usage" : None,
-        "Stock_Decreased"   : None,
-        "Delta"             : None,
-        "Notes"             : f"Menu_ID tidak ditemukan di katalog | TRX: {trx_id}",
-    })
-
-# Bangun DataFrame laporan
-df_action_report = pd.DataFrame(action_rows)
+# Gabungkan laporan valid + invalid
+df_action_report = pd.concat([df_valid_report, df_invalid_report], ignore_index=True)
 
 # Deduplikasi: ambil status paling kritis per (Date, Item_ID)
 STATUS_PRIORITY = {"Invalid Data": 0, "Anomaly": 1, "Restock": 2, "Safe": 3}
