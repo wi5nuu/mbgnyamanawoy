@@ -1,0 +1,40 @@
+{
+  "employees": [
+    {
+      "Employee_ID": "EMP-01",
+      "Full_Name": "Budi Santoso",
+      "Role": "Shift_Lead",
+      "Shift": "Morning"
+    },
+    {
+      "Employee_ID": "EMP-02",
+      "Full_Name": "Siti Rahmawati",
+      "Role": "Barista",
+      "Shift": "Morning"
+    },
+    {
+      "Employee_ID": "EMP-03",
+      "Full_Name": "Agus Pratama",
+      "Role": "Barista",
+      "Shift": "Evening"
+    },
+    {
+      "Employee_ID": "EMP-04",
+      "Full_Name": "Dewi Lestari",
+      "Role": "Kasir",
+      "Shift": "Morning"
+    },
+    {
+      "Employee_ID": "EMP-05",
+      "Full_Name": "Rizki Hidayat",
+      "Role": "Barista",
+      "Shift": "Evening"
+    },
+    {
+      "Employee_ID": "EMP-06",
+      "Full_Name": "Putri Anggraini",
+      "Role": "Shift_Lead",
+      "Shift": "Evening"
+    }
+  ]
+}

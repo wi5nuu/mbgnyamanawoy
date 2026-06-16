@@ -1,0 +1,43 @@
+Item_ID,Item_Name,Supplier_UoM,Min_Stock_Threshold,Category
+INV-0001,Espresso Bean Arabica,Kilogram,8,Coffee Bean
+INV-0002,Robusta Bean,Kilogram,6,Coffee Bean
+INV-0003,Decaf Bean,Kilogram,3,Coffee Bean
+INV-0004,Fresh Milk,Liter,40,Dairy
+INV-0005,Oat Milk,Liter,12,Dairy Alt
+INV-0006,Almond Milk,Liter,10,Dairy Alt
+INV-0007,Condensed Milk,Karton,2,Dairy
+INV-0008,Whipping Cream,Liter,6,Dairy
+INV-0009,Vanilla Syrup,Liter,4,Syrup
+INV-0010,Caramel Syrup,Liter,4,Syrup
+INV-0011,Hazelnut Syrup,Liter,4,Syrup
+INV-0012,Gula Aren Syrup,Liter,6,Syrup
+INV-0013,Chocolate Sauce,Liter,5,Syrup
+INV-0014,Matcha Powder,Kilogram,3,Powder
+INV-0015,Green Tea Powder,Kilogram,2,Powder
+INV-0016,Simple Syrup,Liter,5,Syrup
+INV-0017,Black Tea Bag,Karton,2,Tea
+INV-0018,Green Tea Bag,Karton,2,Tea
+INV-0019,Chocolate Powder,Kilogram,3,Powder
+INV-0020,Honey,Liter,3,Syrup
+INV-0021,Lemon Juice,Liter,4,Juice
+INV-0022,Sparkling Water,Karton,2,Beverage
+INV-0023,Sugar,Kilogram,5,Pantry
+INV-0024,Ice Cube,Kilogram,30,Pantry
+INV-0025,Paper Cup 8oz,Karton,3,Packaging
+INV-0026,Paper Cup 12oz,Karton,4,Packaging
+INV-0027,Paper Cup 16oz,Karton,4,Packaging
+INV-0028,Plastic Cup 16oz,Karton,5,Packaging
+INV-0029,Lid 8oz,Karton,3,Packaging
+INV-0030,Lid 12-16oz,Karton,5,Packaging
+INV-0031,Dome Lid,Karton,4,Packaging
+INV-0032,Paper Straw,Karton,3,Packaging
+INV-0033,Wooden Stirrer,Karton,2,Packaging
+INV-0034,Napkin,Karton,2,Packaging
+INV-0035,Croissant Plain Frozen,Karton,3,Food
+INV-0036,Almond Croissant Frozen,Karton,3,Food
+INV-0037,Banana Bread Slice,Karton,3,Food
+INV-0038,Chocolate Muffin,Karton,3,Food
+INV-0039,Cheese Slice,Karton,2,Food
+INV-0040,Bread Loaf,Pcs,10,Food
+INV-0041,Butter,Kilogram,2,Food
+INV-0042,Vanilla Ice Cream,Liter,4,Food

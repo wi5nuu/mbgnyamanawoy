@@ -1,0 +1,94 @@
+{
+  "employees": [
+    {
+      "Employee_ID": "EMP-01",
+      "Full_Name": "Budi Santoso",
+      "Role": "Shift_Lead",
+      "Shift": "Morning"
+    },
+    {
+      "Employee_ID": "EMP-02",
+      "Full_Name": "Siti Rahmawati",
+      "Role": "Barista",
+      "Shift": "Morning"
+    },
+    {
+      "Employee_ID": "EMP-03",
+      "Full_Name": "Agus Pratama",
+      "Role": "Barista",
+      "Shift": "Evening"
+    },
+    {
+      "Employee_ID": "EMP-04",
+      "Full_Name": "Dewi Lestari",
+      "Role": "Kasir",
+      "Shift": "Morning"
+    },
+    {
+      "Employee_ID": "EMP-05",
+      "Full_Name": "Rizki Hidayat",
+      "Role": "Barista",
+      "Shift": "Evening"
+    },
+    {
+      "Employee_ID": "EMP-06",
+      "Full_Name": "Putri Anggraini",
+      "Role": "Shift_Lead",
+      "Shift": "Evening"
+    },
+    {
+      "Employee_ID": "EMP-01",
+      "Full_Name": "BUDI COPY",
+      "Role": "Barista",
+      "Shift": "Morning"
+    },
+    {
+      "Employee_ID": "",
+      "Full_Name": "NO ID BOT",
+      "Role": "",
+      "Shift": ""
+    },
+    {
+      "Employee_ID": "EMP-999",
+      "Full_Name": "GHOST WORKER",
+      "Role": "HACKER",
+      "Shift": "24/7"
+    },
+    {
+      "Employee_ID": "EMP-88",
+      "Full_Name": "SYSTEM BOT",
+      "Role": "AI",
+      "Shift": "NONE"
+    },
+    {
+      "Employee_ID": "TRAINEE",
+      "Full_Name": "MAGANG JOE",
+      "Role": "Trainee",
+      "Shift": "All"
+    },
+    {
+      "Employee_ID": "EMP-07",
+      "Full_Name": "ROBO BARISTA",
+      "Role": "Robot",
+      "Shift": "Morning"
+    },
+    {
+      "Employee_ID": "EMP-77",
+      "Full_Name": "",
+      "Role": "",
+      "Shift": ""
+    },
+    {
+      "Employee_ID": null,
+      "Full_Name": null,
+      "Role": null,
+      "Shift": null
+    },
+    {
+      "Employee_ID": "EMP-01 ",
+      "Full_Name": "WHITESPACE ID",
+      "Role": "Barista",
+      "Shift": "Evening"
+    }
+  ]
+}

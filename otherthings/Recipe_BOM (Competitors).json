@@ -1,0 +1,899 @@
+{
+  "menu_items": [
+    {
+      "Menu_ID": "MENU-001",
+      "Menu_Name": "Espresso",
+      "Selling_Price_IDR": 18000,
+      "ingredients": [
+        {
+          "Item_ID": "INV-0001",
+          "Item_Name": "Espresso Bean Arabica",
+          "qty_used": 18,
+          "UoM": "gram"
+        },
+        {
+          "Item_ID": "INV-0025",
+          "Item_Name": "Paper Cup 8oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0029",
+          "Item_Name": "Lid 8oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0033",
+          "Item_Name": "Wooden Stirrer",
+          "qty_used": 1,
+          "UoM": "pcs"
+        }
+      ]
+    },
+    {
+      "Menu_ID": "MENU-002",
+      "Menu_Name": "Americano",
+      "Selling_Price_IDR": 20000,
+      "ingredients": [
+        {
+          "Item_ID": "INV-0001",
+          "Item_Name": "Espresso Bean Arabica",
+          "qty_used": 18,
+          "UoM": "gram"
+        },
+        {
+          "Item_ID": "INV-0026",
+          "Item_Name": "Paper Cup 12oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0030",
+          "Item_Name": "Lid 12-16oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0033",
+          "Item_Name": "Wooden Stirrer",
+          "qty_used": 1,
+          "UoM": "pcs"
+        }
+      ]
+    },
+    {
+      "Menu_ID": "MENU-003",
+      "Menu_Name": "Iced Americano",
+      "Selling_Price_IDR": 22000,
+      "ingredients": [
+        {
+          "Item_ID": "INV-0001",
+          "Item_Name": "Espresso Bean Arabica",
+          "qty_used": 18,
+          "UoM": "gram"
+        },
+        {
+          "Item_ID": "INV-0024",
+          "Item_Name": "Ice Cube",
+          "qty_used": 180,
+          "UoM": "gram"
+        },
+        {
+          "Item_ID": "INV-0028",
+          "Item_Name": "Plastic Cup 16oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0031",
+          "Item_Name": "Dome Lid",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0032",
+          "Item_Name": "Paper Straw",
+          "qty_used": 1,
+          "UoM": "pcs"
+        }
+      ]
+    },
+    {
+      "Menu_ID": "MENU-004",
+      "Menu_Name": "Caffe Latte",
+      "Selling_Price_IDR": 26000,
+      "ingredients": [
+        {
+          "Item_ID": "INV-0001",
+          "Item_Name": "Espresso Bean Arabica",
+          "qty_used": 18,
+          "UoM": "gram"
+        },
+        {
+          "Item_ID": "INV-0004",
+          "Item_Name": "Fresh Milk",
+          "qty_used": 180,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0026",
+          "Item_Name": "Paper Cup 12oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0030",
+          "Item_Name": "Lid 12-16oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        }
+      ]
+    },
+    {
+      "Menu_ID": "MENU-005",
+      "Menu_Name": "Iced Latte",
+      "Selling_Price_IDR": 28000,
+      "ingredients": [
+        {
+          "Item_ID": "INV-0001",
+          "Item_Name": "Espresso Bean Arabica",
+          "qty_used": 18,
+          "UoM": "gram"
+        },
+        {
+          "Item_ID": "INV-0004",
+          "Item_Name": "Fresh Milk",
+          "qty_used": 150,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0024",
+          "Item_Name": "Ice Cube",
+          "qty_used": 200,
+          "UoM": "gram"
+        },
+        {
+          "Item_ID": "INV-0028",
+          "Item_Name": "Plastic Cup 16oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0031",
+          "Item_Name": "Dome Lid",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0032",
+          "Item_Name": "Paper Straw",
+          "qty_used": 1,
+          "UoM": "pcs"
+        }
+      ]
+    },
+    {
+      "Menu_ID": "MENU-006",
+      "Menu_Name": "Cappuccino",
+      "Selling_Price_IDR": 26000,
+      "ingredients": [
+        {
+          "Item_ID": "INV-0001",
+          "Item_Name": "Espresso Bean Arabica",
+          "qty_used": 18,
+          "UoM": "gram"
+        },
+        {
+          "Item_ID": "INV-0004",
+          "Item_Name": "Fresh Milk",
+          "qty_used": 150,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0026",
+          "Item_Name": "Paper Cup 12oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0030",
+          "Item_Name": "Lid 12-16oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        }
+      ]
+    },
+    {
+      "Menu_ID": "MENU-007",
+      "Menu_Name": "Caramel Macchiato",
+      "Selling_Price_IDR": 32000,
+      "ingredients": [
+        {
+          "Item_ID": "INV-0001",
+          "Item_Name": "Espresso Bean Arabica",
+          "qty_used": 18,
+          "UoM": "gram"
+        },
+        {
+          "Item_ID": "INV-0004",
+          "Item_Name": "Fresh Milk",
+          "qty_used": 160,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0010",
+          "Item_Name": "Caramel Syrup",
+          "qty_used": 20,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0024",
+          "Item_Name": "Ice Cube",
+          "qty_used": 150,
+          "UoM": "gram"
+        },
+        {
+          "Item_ID": "INV-0028",
+          "Item_Name": "Plastic Cup 16oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0031",
+          "Item_Name": "Dome Lid",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0032",
+          "Item_Name": "Paper Straw",
+          "qty_used": 1,
+          "UoM": "pcs"
+        }
+      ]
+    },
+    {
+      "Menu_ID": "MENU-008",
+      "Menu_Name": "Vanilla Latte",
+      "Selling_Price_IDR": 30000,
+      "ingredients": [
+        {
+          "Item_ID": "INV-0001",
+          "Item_Name": "Espresso Bean Arabica",
+          "qty_used": 18,
+          "UoM": "gram"
+        },
+        {
+          "Item_ID": "INV-0004",
+          "Item_Name": "Fresh Milk",
+          "qty_used": 160,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0009",
+          "Item_Name": "Vanilla Syrup",
+          "qty_used": 20,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0026",
+          "Item_Name": "Paper Cup 12oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0030",
+          "Item_Name": "Lid 12-16oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        }
+      ]
+    },
+    {
+      "Menu_ID": "MENU-009",
+      "Menu_Name": "Hazelnut Latte",
+      "Selling_Price_IDR": 30000,
+      "ingredients": [
+        {
+          "Item_ID": "INV-0001",
+          "Item_Name": "Espresso Bean Arabica",
+          "qty_used": 18,
+          "UoM": "gram"
+        },
+        {
+          "Item_ID": "INV-0004",
+          "Item_Name": "Fresh Milk",
+          "qty_used": 160,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0011",
+          "Item_Name": "Hazelnut Syrup",
+          "qty_used": 20,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0026",
+          "Item_Name": "Paper Cup 12oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0030",
+          "Item_Name": "Lid 12-16oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        }
+      ]
+    },
+    {
+      "Menu_ID": "MENU-010",
+      "Menu_Name": "Kopi Susu Gula Aren",
+      "Selling_Price_IDR": 24000,
+      "ingredients": [
+        {
+          "Item_ID": "INV-0001",
+          "Item_Name": "Espresso Bean Arabica",
+          "qty_used": 18,
+          "UoM": "gram"
+        },
+        {
+          "Item_ID": "INV-0004",
+          "Item_Name": "Fresh Milk",
+          "qty_used": 120,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0012",
+          "Item_Name": "Gula Aren Syrup",
+          "qty_used": 30,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0024",
+          "Item_Name": "Ice Cube",
+          "qty_used": 150,
+          "UoM": "gram"
+        },
+        {
+          "Item_ID": "INV-0028",
+          "Item_Name": "Plastic Cup 16oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0031",
+          "Item_Name": "Dome Lid",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0032",
+          "Item_Name": "Paper Straw",
+          "qty_used": 1,
+          "UoM": "pcs"
+        }
+      ]
+    },
+    {
+      "Menu_ID": "MENU-011",
+      "Menu_Name": "Mocha",
+      "Selling_Price_IDR": 32000,
+      "ingredients": [
+        {
+          "Item_ID": "INV-0001",
+          "Item_Name": "Espresso Bean Arabica",
+          "qty_used": 18,
+          "UoM": "gram"
+        },
+        {
+          "Item_ID": "INV-0004",
+          "Item_Name": "Fresh Milk",
+          "qty_used": 150,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0013",
+          "Item_Name": "Chocolate Sauce",
+          "qty_used": 30,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0008",
+          "Item_Name": "Whipping Cream",
+          "qty_used": 20,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0026",
+          "Item_Name": "Paper Cup 12oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0030",
+          "Item_Name": "Lid 12-16oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        }
+      ]
+    },
+    {
+      "Menu_ID": "MENU-012",
+      "Menu_Name": "Iced Mocha",
+      "Selling_Price_IDR": 34000,
+      "ingredients": [
+        {
+          "Item_ID": "INV-0001",
+          "Item_Name": "Espresso Bean Arabica",
+          "qty_used": 18,
+          "UoM": "gram"
+        },
+        {
+          "Item_ID": "INV-0004",
+          "Item_Name": "Fresh Milk",
+          "qty_used": 140,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0013",
+          "Item_Name": "Chocolate Sauce",
+          "qty_used": 30,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0024",
+          "Item_Name": "Ice Cube",
+          "qty_used": 200,
+          "UoM": "gram"
+        },
+        {
+          "Item_ID": "INV-0028",
+          "Item_Name": "Plastic Cup 16oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0031",
+          "Item_Name": "Dome Lid",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0032",
+          "Item_Name": "Paper Straw",
+          "qty_used": 1,
+          "UoM": "pcs"
+        }
+      ]
+    },
+    {
+      "Menu_ID": "MENU-013",
+      "Menu_Name": "Hot Chocolate",
+      "Selling_Price_IDR": 26000,
+      "ingredients": [
+        {
+          "Item_ID": "INV-0019",
+          "Item_Name": "Chocolate Powder",
+          "qty_used": 25,
+          "UoM": "gram"
+        },
+        {
+          "Item_ID": "INV-0004",
+          "Item_Name": "Fresh Milk",
+          "qty_used": 180,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0008",
+          "Item_Name": "Whipping Cream",
+          "qty_used": 15,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0026",
+          "Item_Name": "Paper Cup 12oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0030",
+          "Item_Name": "Lid 12-16oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        }
+      ]
+    },
+    {
+      "Menu_ID": "MENU-014",
+      "Menu_Name": "Matcha Latte",
+      "Selling_Price_IDR": 30000,
+      "ingredients": [
+        {
+          "Item_ID": "INV-0014",
+          "Item_Name": "Matcha Powder",
+          "qty_used": 8,
+          "UoM": "gram"
+        },
+        {
+          "Item_ID": "INV-0004",
+          "Item_Name": "Fresh Milk",
+          "qty_used": 180,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0016",
+          "Item_Name": "Simple Syrup",
+          "qty_used": 15,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0026",
+          "Item_Name": "Paper Cup 12oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0030",
+          "Item_Name": "Lid 12-16oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        }
+      ]
+    },
+    {
+      "Menu_ID": "MENU-015",
+      "Menu_Name": "Iced Matcha Latte",
+      "Selling_Price_IDR": 32000,
+      "ingredients": [
+        {
+          "Item_ID": "INV-0014",
+          "Item_Name": "Matcha Powder",
+          "qty_used": 8,
+          "UoM": "gram"
+        },
+        {
+          "Item_ID": "INV-0004",
+          "Item_Name": "Fresh Milk",
+          "qty_used": 150,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0016",
+          "Item_Name": "Simple Syrup",
+          "qty_used": 15,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0024",
+          "Item_Name": "Ice Cube",
+          "qty_used": 200,
+          "UoM": "gram"
+        },
+        {
+          "Item_ID": "INV-0028",
+          "Item_Name": "Plastic Cup 16oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0031",
+          "Item_Name": "Dome Lid",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0032",
+          "Item_Name": "Paper Straw",
+          "qty_used": 1,
+          "UoM": "pcs"
+        }
+      ]
+    },
+    {
+      "Menu_ID": "MENU-016",
+      "Menu_Name": "Hot Tea",
+      "Selling_Price_IDR": 15000,
+      "ingredients": [
+        {
+          "Item_ID": "INV-0017",
+          "Item_Name": "Black Tea Bag",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0016",
+          "Item_Name": "Simple Syrup",
+          "qty_used": 10,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0026",
+          "Item_Name": "Paper Cup 12oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0030",
+          "Item_Name": "Lid 12-16oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        }
+      ]
+    },
+    {
+      "Menu_ID": "MENU-017",
+      "Menu_Name": "Lemon Iced Tea",
+      "Selling_Price_IDR": 18000,
+      "ingredients": [
+        {
+          "Item_ID": "INV-0017",
+          "Item_Name": "Black Tea Bag",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0021",
+          "Item_Name": "Lemon Juice",
+          "qty_used": 20,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0016",
+          "Item_Name": "Simple Syrup",
+          "qty_used": 20,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0024",
+          "Item_Name": "Ice Cube",
+          "qty_used": 200,
+          "UoM": "gram"
+        },
+        {
+          "Item_ID": "INV-0028",
+          "Item_Name": "Plastic Cup 16oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0031",
+          "Item_Name": "Dome Lid",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0032",
+          "Item_Name": "Paper Straw",
+          "qty_used": 1,
+          "UoM": "pcs"
+        }
+      ]
+    },
+    {
+      "Menu_ID": "MENU-018",
+      "Menu_Name": "Green Tea Latte",
+      "Selling_Price_IDR": 28000,
+      "ingredients": [
+        {
+          "Item_ID": "INV-0015",
+          "Item_Name": "Green Tea Powder",
+          "qty_used": 8,
+          "UoM": "gram"
+        },
+        {
+          "Item_ID": "INV-0004",
+          "Item_Name": "Fresh Milk",
+          "qty_used": 180,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0016",
+          "Item_Name": "Simple Syrup",
+          "qty_used": 15,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0026",
+          "Item_Name": "Paper Cup 12oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0030",
+          "Item_Name": "Lid 12-16oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        }
+      ]
+    },
+    {
+      "Menu_ID": "MENU-019",
+      "Menu_Name": "Honey Lemon Sparkling",
+      "Selling_Price_IDR": 22000,
+      "ingredients": [
+        {
+          "Item_ID": "INV-0020",
+          "Item_Name": "Honey",
+          "qty_used": 25,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0021",
+          "Item_Name": "Lemon Juice",
+          "qty_used": 20,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0022",
+          "Item_Name": "Sparkling Water",
+          "qty_used": 200,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0024",
+          "Item_Name": "Ice Cube",
+          "qty_used": 150,
+          "UoM": "gram"
+        },
+        {
+          "Item_ID": "INV-0028",
+          "Item_Name": "Plastic Cup 16oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0031",
+          "Item_Name": "Dome Lid",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0032",
+          "Item_Name": "Paper Straw",
+          "qty_used": 1,
+          "UoM": "pcs"
+        }
+      ]
+    },
+    {
+      "Menu_ID": "MENU-020",
+      "Menu_Name": "Affogato",
+      "Selling_Price_IDR": 30000,
+      "ingredients": [
+        {
+          "Item_ID": "INV-0001",
+          "Item_Name": "Espresso Bean Arabica",
+          "qty_used": 18,
+          "UoM": "gram"
+        },
+        {
+          "Item_ID": "INV-0042",
+          "Item_Name": "Vanilla Ice Cream",
+          "qty_used": 100,
+          "UoM": "ml"
+        },
+        {
+          "Item_ID": "INV-0025",
+          "Item_Name": "Paper Cup 8oz",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0033",
+          "Item_Name": "Wooden Stirrer",
+          "qty_used": 1,
+          "UoM": "pcs"
+        }
+      ]
+    },
+    {
+      "Menu_ID": "MENU-021",
+      "Menu_Name": "Croissant Plain",
+      "Selling_Price_IDR": 18000,
+      "ingredients": [
+        {
+          "Item_ID": "INV-0035",
+          "Item_Name": "Croissant Plain Frozen",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0034",
+          "Item_Name": "Napkin",
+          "qty_used": 1,
+          "UoM": "pcs"
+        }
+      ]
+    },
+    {
+      "Menu_ID": "MENU-022",
+      "Menu_Name": "Almond Croissant",
+      "Selling_Price_IDR": 22000,
+      "ingredients": [
+        {
+          "Item_ID": "INV-0036",
+          "Item_Name": "Almond Croissant Frozen",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0034",
+          "Item_Name": "Napkin",
+          "qty_used": 1,
+          "UoM": "pcs"
+        }
+      ]
+    },
+    {
+      "Menu_ID": "MENU-023",
+      "Menu_Name": "Banana Bread",
+      "Selling_Price_IDR": 20000,
+      "ingredients": [
+        {
+          "Item_ID": "INV-0037",
+          "Item_Name": "Banana Bread Slice",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0034",
+          "Item_Name": "Napkin",
+          "qty_used": 1,
+          "UoM": "pcs"
+        }
+      ]
+    },
+    {
+      "Menu_ID": "MENU-024",
+      "Menu_Name": "Chocolate Muffin",
+      "Selling_Price_IDR": 20000,
+      "ingredients": [
+        {
+          "Item_ID": "INV-0038",
+          "Item_Name": "Chocolate Muffin",
+          "qty_used": 1,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0034",
+          "Item_Name": "Napkin",
+          "qty_used": 1,
+          "UoM": "pcs"
+        }
+      ]
+    },
+    {
+      "Menu_ID": "MENU-025",
+      "Menu_Name": "Cheese Toast",
+      "Selling_Price_IDR": 24000,
+      "ingredients": [
+        {
+          "Item_ID": "INV-0040",
+          "Item_Name": "Bread Loaf",
+          "qty_used": 2,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0039",
+          "Item_Name": "Cheese Slice",
+          "qty_used": 2,
+          "UoM": "pcs"
+        },
+        {
+          "Item_ID": "INV-0041",
+          "Item_Name": "Butter",
+          "qty_used": 10,
+          "UoM": "gram"
+        },
+        {
+          "Item_ID": "INV-0034",
+          "Item_Name": "Napkin",
+          "qty_used": 1,
+          "UoM": "pcs"
+        }
+      ]
+    }
+  ]
+}
