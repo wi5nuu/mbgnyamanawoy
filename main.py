@@ -17,10 +17,23 @@ import numpy as np
 import json
 import re
 import os
+import logging
+import time
 import warnings
 warnings.filterwarnings("ignore")   # Suppress UserWarning dari pandas date parsing
 
 from datetime import datetime
+
+# ==============================================================================
+# LOGGING SETUP — Timestamp otomatis pada setiap baris output
+# ==============================================================================
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s  %(message)s",
+    datefmt="%H:%M:%S",
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
+log = logging.getLogger("KopikitaPipeline")
 
 # ==============================================================================
 # HELPER RESILIENCE & UTILS
@@ -101,8 +114,9 @@ PATH_SALES     = find_dataset_file(DATASET_DIR, r"sales_history", "sales_history
 PATH_WAREHOUSE = find_dataset_file(DATASET_DIR, r"warehouse_stock", "warehouse_stock (Competitors).json")
 PATH_INVENTORY = find_dataset_file(DATASET_DIR, r"Master_Inventory", "Master_Inventory (Competitors).csv")
 PATH_BOM       = find_dataset_file(DATASET_DIR, r"Recipe_BOM", "Recipe_BOM (Competitors).json")
-PATH_EMPLOYEE  = find_dataset_file(DATASET_DIR, r"Employee", "Employee (Competitors).json")
-OUTPUT_PATH    = os.path.join(BASE_DIR, "Action_Report.csv")
+PATH_EMPLOYEE        = find_dataset_file(DATASET_DIR, r"Employee", "Employee (Competitors).json")
+OUTPUT_PATH          = os.path.join(BASE_DIR, "Action_Report.csv")
+OUTPUT_QUARANTINE    = os.path.join(BASE_DIR, "quarantine_log.csv")
 
 # ==============================================================================
 # KONSTANTA KONVERSI UNIT PENGUKURAN (UoM)
@@ -987,6 +1001,43 @@ df_action_report = df_action_report[cols_required + cols_optional]
 
 df_action_report.to_csv(OUTPUT_PATH, index=False, encoding="utf-8-sig")
 print(f"    OK Tersimpan di: {OUTPUT_PATH}")
+
+# ------------------------------------------------------------------------------
+# [OUTPUT] Simpan quarantine_log.csv
+# Berisi semua baris yang dikarantina + reason code
+# Fungsi: bukti auditabilitas pipeline (fitur enterprise)
+# ------------------------------------------------------------------------------
+if not df_sales_invalid.empty:
+    df_quarantine = df_sales_invalid.copy()
+    # Rename kolom agar konsisten
+    df_quarantine = df_quarantine.rename(columns={
+        "Invalid_Reason": "Quarantine_Reason",
+        "Quantity_Raw"  : "Quantity_Original",
+    })
+    # Tambahkan keterangan reason yang human-readable
+    reason_labels = {
+        "date_invalid"        : "UNPARSEABLE_DATE — format tanggal tidak dikenali",
+        "menu_id_not_in_bom"  : "GHOST_MENU_ID — Menu_ID tidak ada di katalog BOM",
+        "qty_invalid"         : "INVALID_QUANTITY — nilai quantity tidak bisa diproses",
+    }
+    df_quarantine["Quarantine_Reason"] = df_quarantine["Quarantine_Reason"].apply(
+        lambda reasons: " | ".join(
+            reason_labels.get(r.strip(), r.strip())
+            for r in str(reasons).split("|")
+            if r.strip()
+        )
+    )
+    df_quarantine.to_csv(OUTPUT_QUARANTINE, index=False, encoding="utf-8-sig")
+    print(f"    OK quarantine_log.csv   : {len(df_quarantine):,} baris (bukti auditabilitas)")
+    print(f"       Tersimpan di: {OUTPUT_QUARANTINE}")
+    # Ringkasan per reason
+    for orig_reason in ["date_invalid", "menu_id_not_in_bom", "qty_invalid"]:
+        cnt = df_sales_invalid["Invalid_Reason"].str.contains(orig_reason, na=False).sum()
+        if cnt > 0:
+            print(f"       ├─ {reason_labels.get(orig_reason, orig_reason)}: {cnt:,} baris")
+else:
+    print(f"    OK quarantine_log.csv   : 0 baris (semua data bersih)")
+    open(OUTPUT_QUARANTINE, 'w').close()   # Buat file kosong sebagai bukti
 
 # Preview 15 baris representatif (5 per status)
 print(f"\n    Preview Action_Report.csv (sampel per status):")
