@@ -177,23 +177,37 @@ Input → Lapis 1: pd.to_numeric(errors='coerce')
 
 Hasil: **1.623 baris quantity non-numerik berhasil diselamatkan** dan tidak masuk karantina.
 
-### 4.3 Logika Klasifikasi Restock
+### 4.3 Logika Klasifikasi Restock — Narasi Aturan Bisnis
 
-| Langkah | Formula / Aturan |
-|---|---|
-| 1. Ambil threshold | `Min_Stock_Threshold` dari `Master_Inventory` (dalam Supplier_UoM) |
-| 2. Konversi UoM | Kilogram × 1.000 = gram \| Liter × 1.000 = ml \| Karton × faktor = pcs/ml |
-| 3. Bandingkan | IF `Physical_Stock < threshold_converted` → Status = Restock |
-| 4. Fallback | Jika konversi gagal → gunakan 20.000 units, catat WARNING |
-| 5. Priority | Anomaly > Restock: jika item juga Anomaly, Anomaly override Restock |
+Setiap item di gudang memiliki ambang batas minimal (`Min_Stock_Threshold`) yang disimpan di `Master_Inventory.csv` dalam satuan *Supplier_UoM* (Kilogram, Liter, Karton, atau Pcs). Logika restock bekerja dengan prinsip sederhana: **jika stok fisik turun di bawah ambang batas, sistem menandai item untuk di-restock**.
 
-### 4.4 Formula Deteksi Anomali Shrinkage
+**Namun** — tantangannya ada di konversi satuan. Data gudang mencatat stok dalam gram/ml/pcs (`Warehouse_UoM`), sementara threshold dari supplier dalam Kg/Ltr/Karton. Pipeline menyelesaikan ini dengan pipeline konversi bertahap:
 
-| Variabel | Formula | Sumber Data |
-|---|---|---|
-| `Expected_Stock(t)` | `Physical_Stock(t-1) + Delivery_In(t) - POS_Consumed(t)` | Warehouse JSON + BOM Expansion |
-| `Variance(t)` | `Physical_Stock(t) - Expected_Stock(t)` | Hasil kalkulasi |
-| `Action = Anomaly` | `\|Variance(t)\| > 1.000` unit | `ANOMALY_THRESHOLD = 1.000` |
+1. **Threshold lookup**: Baca `Min_Stock_Threshold` dari Master_Inventory, misalnya "3 Karton" untuk Paper Cup ukuran S.
+2. **Konversi satuan**: Kalikan dengan faktor dari `KARTON_CONVERSION` dictionary (item-by-item, bukan global — karena 1 Karton Paper Cup = 50 pcs, tapi 1 Karton Straw = 250 pcs). Untuk Kg dan Liter, konversi bersifat linear (×1.000).
+3. **Perbandingan**: `IF Physical_Stock < threshold_converted THEN Status = Restock`. Jika Perbandingan dilakukan setelah UoM Match — tidak lagi membandingkan "3 Karton vs 150 pcs", tapi "150 pcs vs 150 pcs".
+4. **Fallback safety**: Jika item tidak ditemukan di `KARTON_CONVERSION` (misal item baru di stress test), pipeline menggunakan 20.000 units sebagai default dan mencatat WARNING ke log — gacha tidak menghentikan pipeline.
+5. **Override priority**: *Anomaly beat Restock* — jika suatu item memenuhi syarat Anomaly (variance melebihi ±1.000 unit) sekaligus Restock, status akhirnya adalah Anomaly. Logikanya: restock bisa menunggu 1 hari, tapi shrinkage perlu investigasi segera.
+
+### 4.4 Formula Deteksi Anomali Shrinkage — Narasi Detektif Stok
+
+Deteksi anomali shrinkage bekerja seperti **detektif stok**: pipeline membandingkan antara "berapa stok yang seharusnya ada" (Expected) dengan "berapa stok yang benar-benar ada" (Physical). Selisihnya disebut *Variance* — dan jika selisih ini terlalu besar, ada sesuatu yang tidak beres.
+
+**Perhitungan langkah demi langkah:**
+
+1. **Expected_Stock(t)** = `Physical_Stock(t-1) + Delivery_In(t) - POS_Consumed(t)`
+   - `Physical_Stock(t-1)`: Stok fisik hari sebelumnya dari warehouse JSON.
+   - `Delivery_In(t)`: Barang masuk di hari t — dihitung dari selisih stok fisik yang positif (jika stok naik dari t-1 ke t, berarti ada pengiriman).
+   - `POS_Consumed(t)`: Total bahan baku yang terjual di hari t — hasil BOM Expansion (setiap transaksi menu dipecah ke ingredient-level sesuai resep di `Recipe_BOM.json`).
+   
+2. **Variance(t)** = `Physical_Stock(t) - Expected_Stock(t)`
+   - Variance negatif (`-1.500`): Stok fisik lebih sedikit dari ekspektasi → **Shrinkage**. Bisa berarti pencurian, tumpahan, atau pencatatan kedatangan barang yang tidak akurat.
+   - Variance positif (`+2.000`): Stok fisik lebih banyak dari ekspektasi → **POS_Overcount**. POS mungkin mencatat penjualan yang tidak benar-benar terjadi, atau resep BOM terlalu boros dalam estimasi bahan.
+   - Variance mendekati nol: Semua baik → stok aktual sesuai penjualan.
+
+3. **Threshold anomaly**: Jika `|Variance| > 1.000` unit, pipeline menetapkan `Action = Anomaly` dan mengisi kolom `Variance_Direction` sebagai `Shrinkage` atau `POS_Overcount`. Ambang 1.000 unit ini bukan angka tebakan — lihat Section 4.5 untuk justifikasi statistiknya (Q3 + 1,5×IQR = 720,62 → dibulatkan ke 1.000 agar lebih konservatif).
+
+**Intuisi bisnis:** Threshold 1.000 unit berarti pipeline mentolerir selisih kecil (misal resep kurang akurat 10–20 gram per cup, atau selisih timbangan gudang). Tapi jika selisihnya setara 20+ cup kopi hilang dalam sehari, sistem menganggap itu bukan kesalahan acak lagi — butuh investigasi.
 
 ### 4.5 Justifikasi Statistik Threshold 1.000 Unit
 
