@@ -1,13 +1,32 @@
 # Panduan Presentasi Juri & Kesiapan Stress Testing (Tim: Yudha, Wisnu, Thoriq)
 ## Dokumen Penguasaan Materi Teknis & Panduan Slide PPT 20 Menit
 
-Dokumen ini disusun khusus sebagai panduan strategi presentasi di hadapan juri selama **20 menit** dan panduan pembagian peran bagi **Yudha (Ketua)**, **Wisnu (Member)**, dan **Thoriq (Member)** untuk menunjukkan keunggulan pipeline ETL Kopikita Roastery.
+---
+
+## 📌 1. Bukti Integrasi 5 Berkas Dataset dalam Kode `main.py`
+
+Untuk menjawab keraguan juri, berikut adalah bukti baris kode konkret di dalam berkas [main.py](file:///d:/hackathon-techprint/main.py) yang membuktikan bahwa **kelima berkas dataset telah terintegrasi 100%** di dalam satu alur pemrosesan terpadu:
+
+1.  **`Master_Inventory.csv` (Terintegrasi di Baris 157–194)**:
+    *   Dibaca oleh pandas di blok `[1a]`.
+    *   Menghasilkan set `valid_item_ids` yang menjadi filter *Foreign Key* saat membaca data gudang (`warehouse_stock.json`) dan resep BOM.
+    *   Menghasilkan `inventory_threshold_map` untuk kalkulasi minimum stok saat pengecekan restock.
+2.  **`Recipe_BOM.json` (Terintegrasi di Baris 197–293 & 602–652)**:
+    *   Dibaca di blok `[1b]` untuk mengekstrak resep porsi ke bahan baku.
+    *   Digunakan sebagai lookup relasional di `[2a]` (BOM Unpacking) untuk memecah transaksi menu penjualan menjadi pemakaian teoritis gram/ml.
+3.  **`Employee.json` (Terintegrasi di Baris 297–326)**:
+    *   Dibaca di blok `[1c]` untuk menghasilkan set `valid_emp_ids`.
+    *   Berfungsi memvalidasi Employee_ID transaksi kasir dan pencatat gudang.
+4.  **`warehouse_stock.json` (Terintegrasi di Baris 330–410 & 654–720)**:
+    *   Dibaca di blok `[1d]` untuk mengekstrak sisa stok fisik harian.
+    *   Stok fisik harian gudang ini direkonsiliasi secara matematis di blok `[2b]`.
+5.  **`sales_history.csv` (Terintegrasi di Baris 443–592 & 602–652)**:
+    *   Dibaca secara batch ter-vektor di blok `[1e]` untuk menyaring penjualan kotor.
+    *   Baris penjualan valid dikirim ke blok `[2a]` untuk dikalikan dengan recipe BOM.
 
 ---
 
-## 📌 1. Pembagian Peran & Penguasaan Materi Krusial
-
-Untuk menunjukkan kekompakan dan pemahaman teknis yang mendalam, berikut adalah pembagian peran presentasi yang direkomendasikan:
+## 📌 2. Pembagian Peran & Alokasi Waktu (Total 20 Menit)
 
 ```mermaid
 gantt
@@ -25,31 +44,54 @@ gantt
     BOM, Rekonsiliasi, 3-Sigma, Demo :active, 13, 20
 ```
 
-### 👨‍✈️ A. Yudha (Ketua Tim) — *System Architecture & Business Logic*
-*   **Materi yang Wajib Dikuasai**:
-    *   **Latar Belakang Masalah**: Fragmentasi data (*data silos*), kebocoran bahan baku (*shrinkage*), dan kendala UoM Mismatch antara unit kasir (cup) vs gudang (gram/ml) vs supplier (kg/liter/galon).
-    *   **Arsitektur Sistem**: Diagram aliran data ETL (Ingestion $\rightarrow$ Cleaning $\rightarrow$ BOM Calculation $\rightarrow$ Reconciliation $\rightarrow$ Anomaly Detection).
-    *   **Skema Relasional (ERD)**: Hubungan antara `Master_Inventory` $\rightarrow$ `Recipe_BOM` $\rightarrow$ `Sales_History`.
-*   **Poin Kunci untuk Juri**: *"Sistem kami didesain dengan prinsip Zero Human Intervention untuk mengeliminasi manipulasi data manual dan mendeteksi pencurian/fraud secara real-time."*
+---
 
-### 👨‍💻 B. Wisnu (Member) — *Data Engineering, Cleansing & Resilience*
-*   **Materi yang Wajib Dikuasai**:
-    *   **Vectorized Cleansing Engine**: Bagaimana regular expression ter-vektor membersihkan kuantitas kotor (desimal koma, kata angka `"two"`, unit trailing `"1 pcs"`) secara paralel tanpa loop *iterrows* yang lambat.
-    *   **Schema Drift Resilience**: Solusi untuk nama kolom dinamis pada CSV (`standardize_columns`) dan perubahan kunci JSON gudang di Q2 dari `stock_remaining` menjadi `sisa_stok_akhir` (`get_case_insensitive_key`).
-    *   **Isolasi Data Kotor (Karantina)**: Bagaimana data transaksi invalid disaring otomatis dan dilaporkan sebagai `"Invalid Data"`.
-*   **Poin Kunci untuk Juri**: *"Kami mengganti iterasi loop Python dengan operasi ter-vektor Pandas tingkat C-Engine. Kecepatan ingesti kami meningkat 10x lipat (2.5 detik untuk 170k data), membuat sistem kami imun terhadap kegagalan timeout saat stress testing."*
+## 📌 3. Skrip Narasi Bicara Presentasi (Narration Scripts)
 
-### 📊 C. Thoriq (Member) — *Data Transformation, Statistics & Verification*
-*   **Materi yang Wajib Dikuasai**:
-    *   **BOM Unpacking**: Penguraian menu terjual harian menjadi kebutuhan bahan baku mentah dasar secara presisi.
-    *   **Stock Reconciliation**: Rumus penurunan stok gudang aktual harian ($\text{Stok}_{d-1} + \text{Delivery}_d - \text{Stok}_d$) dibanding pemakaian teoritis kasir.
-    *   **Logika Anomali Statistik (3-Sigma)**: Justifikasi matematis rumus 3-Sigma ($\mu \pm 3\sigma$) dan mengapa hari pertama per item diabaikan.
-    *   **Safeguard Produksi**: Penggunaan *Standard Deviation Floor* (`10.0` unit) untuk meredam alarm palsu pada bahan baku yang sangat stabil.
-*   **Poin Kunci untuk Juri**: *"Deteksi anomali kami tidak hanya menggunakan batas absolut 1000 unit dari studi kasus, melainkan dikombinasikan dengan 3-Sigma statistik yang mendeteksi deviasi secara kontekstual per bahan baku."*
+Gunakan skrip narasi di bawah ini sebagai acuan materi pembicaraan saat latihan presentasi tim:
+
+### 👨‍✈️ Bagian 1: Yudha (Ketua Tim) — Durasi: Menit 0 s/d 6
+**Topik**: Pengenalan, Masalah Bisnis, Arsitektur, & Relasi Data (ERD).
+
+> *"Selamat pagi/siang Dewan Juri yang terhormat. Saya Yudha, selaku ketua tim, bersama rekan saya Wisnu dan Thoriq, hari ini akan mempresentasikan rancangan ETL Data Pipeline otomatis untuk Kopikita Roastery.*
+>
+> *Masalah utama di Kopikita Roastery adalah tingginya fragmentasi data (data silos). Penjualan dicatat dalam cup di POS, sedangkan gudang mencatat sisa bahan baku dalam gram atau mililiter secara manual. Akibatnya, pemilik tidak pernah tahu sisa stok bahan baku secara real-time dan gagal melacak adanya penyusutan barang misterius atau shrinkage.*
+>
+> *Solusi yang kami tawarkan adalah pipeline ETL otomatis dengan filosofi **Zero Human Intervention** yang kami bangun menggunakan Python dan Pandas. Aliran data kami berjalan otomatis dari membaca file mentah, melakukan pembersihan data kotor, konversi satuan, rekonsiliasi, hingga mendeteksi anomali secara statistik.*
+>
+> *Secara skema data, kami merelasikan berkas Master Inventory sebagai poros utama. Setiap transaksi di sales history divalidasi ke katalog menu di Recipe BOM untuk memastikan integritas data, dan stempel pencatat stok gudang dicocokkan ke database Employee terdaftar untuk meminimalkan kecurangan internal. Selanjutnya, materi teknis pembersihan data kotor akan dijelaskan oleh Wisnu."*
 
 ---
 
-## 📌 2. Struktur Slide PPT Presentasi (20 Menit)
+### 👨‍💻 Bagian 2: Wisnu (Member) — Durasi: Menit 6 s/d 13
+**Topik**: Ingesti Data Ter-vektor, Pembersihan Data Kotor, & Penanganan Schema Drift.
+
+> *"Terima kasih Yudha. Juri yang terhormat, tantangan terbesar dalam Data Automation adalah menghadapi kotornya data transaksi riil dan perubahan mendadak pada struktur data atau schema drift.*
+>
+> *Untuk menjamin sistem kami lolos stress testing dengan volume data jutaan baris, kami mengeliminasi loop baris-per-baris Python biasa yang terkenal lambat. Kami mendesain **Vectorized Ingestion Engine** dengan membaca data secara batch per 50.000 baris. Seluruh pembersihan dikerjakan secara paralel di memori.*
+>
+> *Dalam sales history, kuantitas penjualan sangat berantakan. Kami membersihkannya menggunakan regex ter-vektor: kata angka seperti 'two' otomatis diterjemahkan menjadi 2.0, desimal koma diganti menjadi titik desimal, dan unit trailing seperti 'pcs' atau 'cups' dipotong otomatis. Hasilnya, 170.000+ baris data berhasil kami ingest dan bersihkan hanya dalam waktu **2,5 detik**.*
+>
+> *Kami juga mengantisipasi **Schema Drift** tingkat produksi secara profesional. Ketika file warehouse mengalami perubahan nama kunci dari 'stock_remaining' menjadi 'sisa_stok_akhir' pada kuartal kedua, program kami tidak crash. Kami membuat fungsi pencarian dinamis yang secara otomatis mendeteksi alias kunci dan menyelaraskan kolom CSV kasir yang bergeser atau berbeda casing-nya secara otomatis. Selanjutnya, kalkulasi BOM dan anomali akan dijabarkan oleh Thoriq."*
+
+---
+
+### 📊 Bagian 3: Thoriq (Member) — Durasi: Menit 13 s/d 20
+**Topik**: BOM Unpacking, Rekonsiliasi Delta, Logika Anomali 3-Sigma, & Laporan Akhir.
+
+> *"Terima kasih Wisnu. Juri yang terhormat, setelah data berhasil diingesti dan dibersihkan, sistem kami masuk ke tahap **BOM Unpacking**.*
+>
+> *Setiap transaksi menu kasir dibongkar berdasarkan gramasi resep di Recipe BOM menjadi pemakaian teoritis bahan baku. Setelah itu, kami menghitung penurunan stok fisik riil di gudang hari demi hari. Selisih dari penurunan stok gudang aktual dikurangi pemakaian teoritis kasir menghasilkan nilai Delta atau Variance.*
+>
+> *Untuk membedakan penyusutan wajar operasional (seperti bahan tumpah) dengan kehilangan akibat pencurian, kami menerapkan **Statistical Anomaly Detection berbasis aturan 3-Sigma** ($\mu \pm 3\sigma$). Kami juga menambahkan 'Standard Deviation Floor Limit' minimal 10.0 unit untuk mencegah alarm palsu pada bahan baku yang sangat stabil.*
+>
+> *Hari pertama per item kami abaikan secara logis karena tidak memiliki sisa stok hari sebelumnya. Klasifikasi keputusan akhir kami urutkan berdasarkan prioritas keparahan: Invalid Data jika menu tidak dikenal, Anomaly jika selisih > 1000 unit atau di luar 3-Sigma, Restock jika stok di bawah threshold minimum, dan Safe jika normal. Hasil laporan akhir tersimpan secara rapi dalam berkas **Action_Report.csv**.*
+>
+> *Sebagai penutup, sistem kami telah lolos uji konsistensi hasil, aman dari division-by-zero, dan 100% siap menghadapi stress testing dataset juri yang jauh lebih besar dan kotor secara mandiri."*
+
+---
+
+## 📌 4. Struktur Slide PPT Presentasi
 
 | No Slide | Judul Slide | Pembawa Materi | Isi Kandungan Slide |
 | :---: | :--- | :---: | :--- |
@@ -63,32 +105,3 @@ gantt
 | **Slide 8** | Demo Sistem & Ringkasan Laporan Akhir | **Thoriq** | Ringkasan pembacaan 170.613 baris, karantina data, dan preview Action_Report.csv. |
 | **Slide 9** | Kesiapan Uji Beban (*Stress Testing*) | **Semua** | Pembuktian throughput sistem (kecepatan proses ~2,5 detik) dan kesiapan dataset 250k+. |
 | **Slide 10** | Tanya Jawab (Q&A) | **Semua** | Sesi diskusi bersama dewan juri. |
-
----
-
-## 📌 3. Bukti Kesiapan Sistem Menghadapi Stress Testing
-
-Sistem Anda saat ini **100% layak** dan telah memenuhi syarat kelayakan produksi. Berikut adalah bukti teknisnya:
-
-1.  **Bukti Ketahanan Data Kotor (Vectorized Regex)**:
-    *   *Uji Coba*: Input kuantitas `"two"` atau `"1.5 cups"` berhasil dipulihkan secara otomatis menjadi tipe data float (`2.0` dan `1.5`) secara paralel dalam hitungan milidetik.
-2.  **Bukti Ketahanan Schema Drift (JSON & CSV)**:
-    *   *Uji Coba*: Pada dataset saat ini, data gudang Q1 (`stock_remaining`) dan Q2 (`sisa_stok_akhir`) terbaca secara mulus tanpa kehilangan satu pun baris stok.
-3.  **Bukti Kecepatan Throughput**:
-    *   *Uji Coba*: Waktu eksekusi pipeline untuk 170.613 data adalah **~2.5 detik**. Jika komite juri men-stress test dengan **250.000 data kotor baru**, sistem diproyeksikan selesai dalam **~3.5 - 4.0 detik**, jauh di bawah batas waktu timeout rata-hari kompetisi (~60 detik).
-4.  **Bukti Akurasi Deteksi Anomali**:
-    *   Sistem secara akurat mengidentifikasi **189 anomali** nyata (seperti kehilangan besar Fresh Milk sebesar +95.506 ml pada 2025-01-07) tanpa terganggu oleh fluktuasi kecil operasional harian berkat batas bawah standar deviasi (*floor limit*).
-
----
-
-## 📌 4. Analisis Kualitas Kode & Nilai Tambah Profesional
-
-### Keunggulan Kode [main.py](file:///d:/hackathon-techprint/main.py) Saat Ini:
-*   **Vectorized Data Cleansing**: Tidak ada pembersihan baris menggunakan iterasi loop Python biasa pada sales data. Semuanya dilakukan melalui fungsi Pandas ter-vektor yang memanfaatkan C-Engine Pandas.
-*   **Dynamic Path Scanner**: Jika juri menaruh dataset baru dengan nama berkas tanpa suffix ` (Competitors)`, skrip akan memindai folder target dan menemukannya secara dinamis menggunakan regex pattern.
-*   **Kekokohan Format Simpan**: Action Report disimpan dengan `encoding="utf-8-sig"`, memastikan file CSV dapat langsung dibuka di Microsoft Excel tanpa terjadi kerusakan pembacaan huruf/karakter aneh.
-*   **Penanganan File Kosong/Hilang**: Jika berkas opsional seperti `Employee.json` tidak ada di folder ujian, program tidak akan crash melainkan otomatis memberikan warning dan menggunakan default aman (*safe fallback*).
-
-### Rekomendasi Tambahan untuk Tim:
-*   Saat sesi demo, jalankan perintah `python main.py` secara langsung di terminal dan tunjukkan log eksekusinya yang rapi serta ringkasan statistiknya.
-*   Juri sangat menyukai visualisasi data. Tunjukkan bahwa output tabel `Action_Report.csv` Anda telah memiliki kolom detail opsional (`Notes`, `Delta`, `Stock_Remaining`) untuk transparansi audit, di samping 3 kolom utama yang diwajibkan oleh komite.
